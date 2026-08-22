@@ -21,3 +21,5 @@ Thumbs.db
 *.pkl
 
 .env
+# Generated project outputs
+results/
