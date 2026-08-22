@@ -29,6 +29,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # ─── 1. Load Dataset ───────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "insurance_dataset.csv"
+RESULTS_DIR = BASE_DIR / "results"
+RESULTS_DIR.mkdir(exist_ok=True)
 
 df = pd.read_csv(DATA_PATH)
 print("Dataset Shape:", df.shape)
@@ -64,7 +66,7 @@ axes[1, 2].set_xlabel('Age')
 axes[1, 2].set_ylabel('Charges')
 
 plt.tight_layout()
-plt.savefig('eda_plots.png', dpi=150)
+plt.savefig(RESULTS_DIR / 'eda_plots.png', dpi=150)
 plt.show()
 print("EDA plots saved to eda_plots.png")
 
@@ -117,7 +119,7 @@ sns.heatmap(
 
 plt.title('Numerical Feature Correlation Matrix')
 plt.tight_layout()
-plt.savefig('correlation_matrix.png', dpi=150)
+plt.savefig(RESULTS_DIR / 'correlation_matrix.png', dpi=150)
 plt.show()
 # ─── 4. Model Training & Evaluation ────────────────────────────────
 
@@ -196,7 +198,7 @@ for bar, val in zip(bars, results_df['R² Score']):
     ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02, f'{val:.4f}', ha='center', fontsize=10)
 plt.xticks(rotation=15)
 plt.tight_layout()
-plt.savefig('model_comparison.png', dpi=150)
+plt.savefig(RESULTS_DIR / 'model_comparison.png', dpi=150)
 plt.show()
 
 print(f"\nBest Model: {results_df.loc[results_df['R² Score'].idxmax(), 'Model']} "
