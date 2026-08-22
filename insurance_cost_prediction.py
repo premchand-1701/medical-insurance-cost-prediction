@@ -15,6 +15,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.linear_model import LinearRegression
@@ -24,7 +25,10 @@ from sklearn.svm import SVR
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # ─── 1. Load Dataset ───────────────────────────────────────────────
-df = pd.read_csv('insurance_dataset.csv')
+BASE_DIR = Path(__file__).resolve().parent
+DATA_PATH = BASE_DIR / "insurance_dataset.csv"
+
+df = pd.read_csv(DATA_PATH)
 print("Dataset Shape:", df.shape)
 print("\nFirst 5 Rows:")
 print(df.head())
