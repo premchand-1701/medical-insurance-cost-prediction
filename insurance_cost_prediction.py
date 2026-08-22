@@ -17,7 +17,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.tree import DecisionTreeRegressor
@@ -66,72 +68,119 @@ plt.savefig('eda_plots.png', dpi=150)
 plt.show()
 print("EDA plots saved to eda_plots.png")
 
-# ─── 3. Data Preprocessing ─────────────────────────────────────────
-le_sex = LabelEncoder()
-le_smoker = LabelEncoder()
-le_region = LabelEncoder()
+# ─── 3. Train-Test Split & Preprocessing ───────────────────────────
 
-df['sex'] = le_sex.fit_transform(df['sex'])          # female=0, male=1
-df['smoker'] = le_smoker.fit_transform(df['smoker'])  # no=0, yes=1
-df['region'] = le_region.fit_transform(df['region'])  # alphabetical encoding
-
-print("\nEncoded Dataset:")
-print(df.head())
-
-# Correlation matrix
-plt.figure(figsize=(8, 6))
-sns.heatmap(df.corr(), annot=True, cmap='coolwarm', fmt='.2f')
-plt.title('Feature Correlation Matrix')
-plt.tight_layout()
-plt.savefig('correlation_matrix.png', dpi=150)
-plt.show()
-
-# ─── 4. Train-Test Split ───────────────────────────────────────────
+# Separate features and target
 X = df.drop('charges', axis=1)
 y = df['charges']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Identify numerical and categorical features
+numerical_features = ['age', 'bmi', 'children']
+categorical_features = ['sex', 'smoker', 'region']
+
+# Split data before fitting preprocessing
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
 print(f"\nTraining set: {X_train.shape[0]} samples")
 print(f"Testing set:  {X_test.shape[0]} samples")
 
-# Scale features for SVR
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+# Preprocessing pipeline
+preprocessor = ColumnTransformer(
+    transformers=[
+        (
+            'numerical',
+            StandardScaler(),
+            numerical_features
+        ),
+        (
+            'categorical',
+            OneHotEncoder(handle_unknown='ignore'),
+            categorical_features
+        )
+    ]
+)
 
-# ─── 5. Model Training & Evaluation ────────────────────────────────
+# Correlation matrix for numerical features
+plt.figure(figsize=(8, 6))
+
+sns.heatmap(
+    df[numerical_features + ['charges']].corr(),
+    annot=True,
+    cmap='coolwarm',
+    fmt='.2f'
+)
+
+plt.title('Numerical Feature Correlation Matrix')
+plt.tight_layout()
+plt.savefig('correlation_matrix.png', dpi=150)
+plt.show()
+# ─── 4. Model Training & Evaluation ────────────────────────────────
+
 models = {
     'Linear Regression': LinearRegression(),
-    'Decision Tree Regressor': DecisionTreeRegressor(random_state=42),
-    'Random Forest Regressor': RandomForestRegressor(n_estimators=100, random_state=42),
-    'Gradient Boosting Regressor': GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, random_state=42),
-    'Support Vector Regressor': SVR(kernel='rbf', C=10000, gamma=0.001)
+    'Decision Tree Regressor': DecisionTreeRegressor(
+        random_state=42
+    ),
+    'Random Forest Regressor': RandomForestRegressor(
+        n_estimators=100,
+        random_state=42
+    ),
+    'Gradient Boosting Regressor': GradientBoostingRegressor(
+        n_estimators=100,
+        learning_rate=0.1,
+        random_state=42
+    ),
+    'Support Vector Regressor': SVR(
+        kernel='rbf',
+        C=10000,
+        gamma=0.001
+    )
 }
 
 results = []
-print("\n" + "="*70)
+
+print("\n" + "=" * 70)
 print("MODEL EVALUATION RESULTS")
-print("="*70)
+print("=" * 70)
 
 for name, model in models.items():
-    if name == 'Support Vector Regressor':
-        model.fit(X_train_scaled, y_train)
-        y_pred = model.predict(X_test_scaled)
-    else:
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
 
+    # Combine preprocessing and model into one pipeline
+    model_pipeline = Pipeline(
+        steps=[
+            ('preprocessor', preprocessor),
+            ('model', model)
+        ]
+    )
+
+    # Train the complete pipeline
+    model_pipeline.fit(X_train, y_train)
+
+    # Make predictions
+    y_pred = model_pipeline.predict(X_test)
+
+    # Calculate evaluation metrics
     mae = mean_absolute_error(y_test, y_pred)
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     r2 = r2_score(y_test, y_pred)
 
-    results.append({'Model': name, 'MAE': mae, 'RMSE': rmse, 'R² Score': r2})
+    results.append({
+        'Model': name,
+        'MAE': mae,
+        'RMSE': rmse,
+        'R² Score': r2
+    })
 
     print(f"\n{name}")
     print(f"  MAE:      ${mae:,.2f}")
     print(f"  RMSE:     ${rmse:,.2f}")
     print(f"  R² Score: {r2:.4f}")
-
-# ─── 6. Results Comparison ─────────────────────────────────────────
+# ─── 5. Results Comparison ────────────────────────────────────────
 results_df = pd.DataFrame(results)
 print("\n\nComparison Table:")
 print(results_df.to_string(index=False))
