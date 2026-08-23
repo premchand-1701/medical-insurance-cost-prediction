@@ -1,0 +1,12 @@
+Feature,Importance
+categorical__smoker_yes,0.3763484686198317
+categorical__smoker_no,0.30013757205774716
+numerical__bmi,0.19082849718288994
+numerical__age,0.11694728965146603
+numerical__children,0.010163095281357467
+categorical__region_northeast,0.002415930971905353
+categorical__region_northwest,0.0012832220344876865
+categorical__region_southwest,0.0010074726610077986
+categorical__sex_female,0.0003628705853890552
+categorical__sex_male,0.0002749966871050256
+categorical__region_southeast,0.0002305842668128748
