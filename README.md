@@ -121,22 +121,27 @@ The program then predicts the estimated medical insurance cost.
 - Jupyter Notebook
 - Joblib
 
-## 📁 Project Structure
+## Project Structure
 
+```text
 medical-insurance-cost-prediction/
 │
-├── results/
-├── .gitignore
-├── feature_importance.png
+├── insurance_dataset.csv
 ├── insurance_analysis.ipynb
 ├── insurance_cost_prediction.py
-├── insurance_dataset.csv
-├── insurance_model.pkl
-├── model_comparison.png
 ├── predict.py
+├── insurance_model.pkl        # Generated locally, ignored by Git
+├── feature_importance.csv
+├── feature_importance.png
 ├── project-presentation.pptx
+├── requirements.txt
 ├── README.md
-└── requirements.txt
+├── .gitignore
+│
+└── results/
+    ├── eda_plots.png
+    ├── correlation_matrix.png
+    └── model_comparison.png
 
 ## ▶️ How to Run
 

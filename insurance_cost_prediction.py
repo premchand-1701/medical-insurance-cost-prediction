@@ -287,3 +287,32 @@ print(
 
 print("\nBest model saved as insurance_model.pkl")
 print("All plots saved. Project complete!")
+# Feature importance for the best model
+if hasattr(best_model, "named_steps"):
+    model = best_model.named_steps["model"]
+    preprocessor = best_model.named_steps["preprocessor"]
+
+    if hasattr(model, "feature_importances_"):
+        feature_names = preprocessor.get_feature_names_out()
+        importances = model.feature_importances_
+
+        importance_df = pd.DataFrame({
+            "Feature": feature_names,
+            "Importance": importances
+        }).sort_values("Importance", ascending=False)
+
+        importance_df.to_csv("feature_importance.csv", index=False)
+
+        plt.figure(figsize=(10, 6))
+        plt.barh(
+            importance_df["Feature"].head(10)[::-1],
+            importance_df["Importance"].head(10)[::-1]
+        )
+        plt.xlabel("Importance")
+        plt.ylabel("Feature")
+        plt.title("Top 10 Feature Importance")
+        plt.tight_layout()
+        plt.savefig("feature_importance.png")
+        plt.close()
+
+        print("Feature importance saved.")
